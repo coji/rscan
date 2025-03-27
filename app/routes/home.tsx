@@ -1,5 +1,5 @@
 import { Camera, CheckCircle, FileText, Shield, Smartphone } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router'
 import {
   Accordion,
@@ -29,12 +29,28 @@ export function meta() {
   ]
 }
 
+declare global {
+  interface Window {
+    // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+    gtag?: (...args: any[]) => void
+  }
+}
+
 export default function Home() {
   const [open, setOpen] = useState(false)
 
   const handleStartScan = () => {
     setOpen(true)
   }
+
+  useEffect(() => {
+    if (open) {
+      window.gtag?.('event', 'conversion', {
+        event_category: 'engagement',
+        event_label: 'scan_dialog_opened',
+      })
+    }
+  }, [open])
 
   return (
     <div className="min-h-screen bg-white">
