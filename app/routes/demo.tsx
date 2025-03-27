@@ -13,6 +13,7 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import {
   Form,
+  Link,
   useActionData,
   useLoaderData,
   useNavigation,
@@ -280,7 +281,9 @@ export default function ReceiptScanner() {
     const stream = video.srcObject as MediaStream
     if (stream) {
       const tracks = stream.getTracks()
-      tracks.forEach((track: MediaStreamTrack) => track.stop())
+      for (const track of tracks) {
+        track.stop()
+      }
       video.srcObject = null
     }
 
@@ -490,17 +493,18 @@ export default function ReceiptScanner() {
               {scanStep === 1 && (
                 <div className="space-y-4">
                   <div className="relative overflow-hidden rounded-lg border bg-black">
+                    {/* biome-ignore lint/a11y/useMediaCaption: <explanation> */}
                     <video
                       ref={videoRef}
                       className="aspect-[4/3] h-auto w-full object-cover"
                       playsInline
-                    ></video>
+                    />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="h-4/5 w-4/5 rounded border-2 border-dashed border-white bg-transparent"></div>
+                      <div className="h-4/5 w-4/5 rounded border-2 border-dashed border-white bg-transparent" />
                     </div>
                   </div>
 
-                  <canvas ref={canvasRef} className="hidden"></canvas>
+                  <canvas ref={canvasRef} className="hidden" />
 
                   <div className="flex justify-between gap-4">
                     <Button variant="outline" onClick={() => setScanStep(0)}>
@@ -797,15 +801,15 @@ export default function ReceiptScanner() {
           &copy; 2025 領収書スキャナー - 登録不要・完全無料
         </p>
         <div className="flex justify-center space-x-4">
-          <a href="#" className="hover:underline">
+          <Link to="#" className="hover:underline">
             プライバシーポリシー
-          </a>
-          <a href="#" className="hover:underline">
+          </Link>
+          <Link to="#" className="hover:underline">
             利用規約
-          </a>
-          <a href="#" className="hover:underline">
+          </Link>
+          <Link to="#" className="hover:underline">
             お問い合わせ
-          </a>
+          </Link>
         </div>
       </footer>
     </div>
