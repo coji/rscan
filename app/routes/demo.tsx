@@ -317,18 +317,70 @@ export default function ReceiptScanner({
       }
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints)
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream
-        await videoRef.current.play()
-      }
 
-      setBatchScanMode(true)
+        try {
+          await videoRef.current.play()
+          console.log(
+            'カメラストリーム開始成功: ',
+            videoRef.current.videoWidth,
+            'x',
+            videoRef.current.videoHeight,
+          )
+          // ここでsetBatchScanMode(true)を呼び出さない - すでに設定済み
+        } catch (playError) {
+          console.error('ビデオ再生エラー:', playError)
+          setBatchScanMode(false) // エラー時はモードを元に戻す
+          alert('カメラの起動に失敗しました。')
+        }
+      } else {
+        console.error(
+          'videoRef.current が null です - カメラを初期化できません',
+        )
+        setBatchScanMode(false) // エラー時はモードを元に戻す
+      }
     } catch (error) {
       console.error('カメラの起動に失敗しました:', error)
+      setBatchScanMode(false) // エラー時はモードを元に戻す
       alert(
         'カメラへのアクセスができませんでした。カメラの許可設定を確認してください。',
       )
     }
+  }
+
+  // カメラ開始ボタンの処理を修正
+  const startCamera = () => {
+    // 重要: まず先にバッチスキャンモードをtrueに設定
+    setBatchScanMode(true)
+
+    // バッチスキャンモードが反映され、videoタグがレンダリングされた後で
+    // カメラ初期化を行うために、わずかに遅延させる
+    setTimeout(() => {
+      if (videoRef.current) {
+        initCamera()
+      } else {
+        console.error(
+          'videoRef.current が null です - レンダリングを待っています...',
+        )
+
+        // さらに少し待ってから再試行
+        setTimeout(() => {
+          if (videoRef.current) {
+            console.log(
+              'videoRef.current が見つかりました、カメラを初期化します',
+            )
+            initCamera()
+          } else {
+            console.error('videoRef.current が依然として null です')
+            // バッチモードをキャンセル
+            setBatchScanMode(false)
+            alert('カメラの初期化に失敗しました。もう一度お試しください。')
+          }
+        }, 500)
+      }
+    }, 100)
   }
 
   // カメラ停止
@@ -487,6 +539,38 @@ export default function ReceiptScanner({
     }
   }, [actionData])
 
+  useEffect(() => {
+    console.log(
+      'コンポーネントがマウントされました。videoRef の状態:',
+      videoRef.current ? 'OK' : 'NULL',
+    )
+
+    // このeffectは初回レンダリング時のみ実行
+  }, [])
+
+  // バッチスキャンモードに入る時にビデオ要素が確実に存在することを確認
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useEffect(() => {
+    if (batchScanMode) {
+      console.log('バッチスキャンモードが有効になりました')
+
+      // videoRefが設定されているか確認するための少し遅延させたチェック
+      const timeoutId = setTimeout(() => {
+        console.log(
+          'videoRef の状態:',
+          videoRef.current
+            ? 'ビデオ要素が存在します'
+            : 'ビデオ要素がありません',
+        )
+      }, 100)
+
+      return () => clearTimeout(timeoutId)
+    }
+    console.log('バッチスキャンモードが無効になりました')
+    // カメラのクリーンアップが必要な場合はここで行う
+    stopCamera()
+  }, [batchScanMode])
+
   const isSubmitting = navigation.state === 'submitting'
 
   return (
@@ -532,7 +616,7 @@ export default function ReceiptScanner({
                 <div className="space-y-6">
                   <div className="flex flex-col justify-center gap-4 sm:flex-row">
                     <Button
-                      onClick={initCamera}
+                      onClick={startCamera}
                       className="flex items-center gap-2"
                     >
                       <CameraIcon className="h-4 w-4" />
@@ -592,6 +676,7 @@ export default function ReceiptScanner({
                       ref={videoRef}
                       className="aspect-[4/3] h-auto w-full object-cover"
                       playsInline
+                      autoPlay
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="h-4/5 w-4/5 rounded border-2 border-dashed border-white bg-transparent" />
