@@ -14,6 +14,8 @@ import {
   Smartphone,
 } from 'lucide-react';
 import { Link } from 'react-router';
+import { Avatar, AvatarFallback } from '~/components/ui/avatar';
+import { AvatarImage } from '@radix-ui/react-avatar';
 
 export function meta() {
   return [
@@ -49,10 +51,14 @@ export default function Home() {
         <div className="container mx-auto max-w-6xl flex flex-col md:flex-row items-center gap-8">
           <div className="flex-1 space-y-6">
             <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
-              領収書スキャナー - 登録不要・完全無料
+              領収書スキャナー
+              <br />
+              <span className="text-3xl md:text-4xl text-muted-foreground">
+                登録不要・完全無料
+              </span>
             </h1>
             <p className="text-xl text-gray-700">
-              スマホでサクッとスキャン、確定申告も簡単に
+              スマホでサクッと一気にスキャン、確定申告も簡単に
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
@@ -61,9 +67,9 @@ export default function Home() {
               >
                 今すぐスキャン開始
               </Button>
-              <Button variant="outline" size="lg" className="text-lg">
+              {/* <Button variant="outline" size="lg" className="text-lg">
                 デモを見る
-              </Button>
+              </Button> */}
             </div>
             <div className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
               すでに10,000人以上が利用中！
@@ -169,12 +175,12 @@ export default function Home() {
           <h2 className="text-3xl font-bold text-center mb-12">ユースケース</h2>
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-              <div className="mb-4 h-48 bg-gray-100 rounded-lg flex items-center justify-center">
+              <div className="mb-4 h-72 bg-gray-100 rounded-lg flex items-center justify-center">
                 <img
-                  src="/images/placeholder.svg?height=200&width=300"
+                  src="/images/usecase-1.png"
                   alt="確定申告イメージ"
-                  width={300}
-                  height={200}
+                  width={500}
+                  height={500}
                   className="rounded-lg"
                 />
               </div>
@@ -185,13 +191,13 @@ export default function Home() {
               </ul>
             </div>
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-              <div className="mb-4 h-48 bg-gray-100 rounded-lg flex items-center justify-center">
+              <div className="mb-4 h-72 bg-gray-100 rounded-lg flex items-center justify-center">
                 <img
-                  src="/images/placeholder.svg"
+                  src="/images/usecase-2.png"
                   alt="経費精算イメージ"
-                  width={300}
-                  height={200}
-                  className="rounded-lg"
+                  width={500}
+                  height={500}
+                  className="rounded-lg w-auto h-auto"
                 />
               </div>
               <h3 className="text-xl font-bold mb-3">経費精算をスムーズに</h3>
@@ -201,12 +207,12 @@ export default function Home() {
               </ul>
             </div>
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-              <div className="mb-4 h-48 bg-gray-100 rounded-lg flex items-center justify-center">
+              <div className="mb-4 h-72 bg-gray-100 rounded-lg flex items-center justify-center">
                 <img
-                  src="/images/placeholder.svg"
+                  src="/images/usecase-3.png"
                   alt="領収書作成イメージ"
-                  width={300}
-                  height={200}
+                  width={500}
+                  height={500}
                   className="rounded-lg"
                 />
               </div>
@@ -226,7 +232,7 @@ export default function Home() {
       </section>
 
       {/* Demo Section */}
-      <section className="py-16 px-4 bg-gray-50">
+      {/* <section className="py-16 px-4 bg-gray-50">
         <div className="container mx-auto max-w-6xl">
           <h2 className="text-3xl font-bold text-center mb-12">デモ</h2>
           <div className="bg-white p-6 rounded-xl shadow-lg overflow-hidden">
@@ -261,7 +267,7 @@ export default function Home() {
             </div>
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* Social Proof Section */}
       <section className="py-16 px-4 bg-white">
@@ -311,9 +317,15 @@ export default function Home() {
               // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
               <div key={i} className="bg-blue-50 p-6 rounded-xl">
                 <div className="flex items-center mb-4">
-                  <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center text-blue-600 font-bold">
-                    {testimonial.name.charAt(0)}
-                  </div>
+                  <Avatar className="size-12">
+                    <AvatarFallback>
+                      {testimonial.name.charAt(0)}
+                    </AvatarFallback>
+                    <AvatarImage
+                      src={`images/user-${i + 1}.png`}
+                      alt={testimonial.name}
+                    />
+                  </Avatar>
                   <div className="ml-4">
                     <h4 className="font-bold">{testimonial.name}</h4>
                     <p className="text-sm text-gray-600">{testimonial.role}</p>
