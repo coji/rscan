@@ -198,7 +198,7 @@ export default function Home() {
           <h2 className="mb-12 text-center text-3xl font-bold">ユースケース</h2>
           <div className="grid gap-8 md:grid-cols-3">
             <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-              <div className="mb-4 flex h-72 items-center justify-center rounded-lg bg-gray-100">
+              <div className="mb-4 flex items-center justify-center rounded-lg bg-gray-100">
                 <img
                   src="/images/usecase-1.png"
                   alt="確定申告イメージ"
@@ -214,7 +214,7 @@ export default function Home() {
               </ul>
             </div>
             <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-              <div className="mb-4 flex h-72 items-center justify-center rounded-lg bg-gray-100">
+              <div className="mb-4 flex items-center justify-center rounded-lg bg-gray-100">
                 <img
                   src="/images/usecase-2.png"
                   alt="経費精算イメージ"
@@ -230,7 +230,7 @@ export default function Home() {
               </ul>
             </div>
             <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-              <div className="mb-4 flex h-72 items-center justify-center rounded-lg bg-gray-100">
+              <div className="mb-4 flex items-center justify-center rounded-lg bg-gray-100">
                 <img
                   src="/images/usecase-3.png"
                   alt="領収書作成イメージ"
