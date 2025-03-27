@@ -1,7 +1,8 @@
 import type { Config } from '@react-router/dev/config'
 
 export default {
-  ssr: true,
+  ssr: false,
+  prerender: true,
   future: {
     unstable_viteEnvironmentApi: true,
   },
