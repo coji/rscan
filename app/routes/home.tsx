@@ -1,5 +1,3 @@
-import { AvatarImage } from '@radix-ui/react-avatar'
-import { DialogDescription } from '@radix-ui/react-dialog'
 import { Camera, CheckCircle, FileText, Shield, Smartphone } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
@@ -9,11 +7,12 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from '~/components/ui/accordion'
-import { Avatar, AvatarFallback } from '~/components/ui/avatar'
+import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
 import { Button } from '~/components/ui/button'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
