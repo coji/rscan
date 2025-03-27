@@ -1,21 +1,18 @@
-import type { Route } from './+types/home';
-import { Button } from '~/components/ui/button';
+import { AvatarImage } from '@radix-ui/react-avatar'
+import { PopoverContent } from '@radix-ui/react-popover'
+import { Camera, CheckCircle, FileText, Shield, Smartphone } from 'lucide-react'
+import { useState } from 'react'
+import { Link } from 'react-router'
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '~/components/ui/accordion';
-import {
-  Camera,
-  CheckCircle,
-  FileText,
-  Shield,
-  Smartphone,
-} from 'lucide-react';
-import { Link } from 'react-router';
-import { Avatar, AvatarFallback } from '~/components/ui/avatar';
-import { AvatarImage } from '@radix-ui/react-avatar';
+} from '~/components/ui/accordion'
+import { Avatar, AvatarFallback } from '~/components/ui/avatar'
+import { Button } from '~/components/ui/button'
+import { Popover } from '~/components/ui/popover'
+import type { Route } from './+types/home'
 
 export function meta() {
   return [
@@ -25,18 +22,24 @@ export function meta() {
       content:
         'アカウント登録不要、完全無料で使える領収書スキャナー。スマホカメラでサクッとスキャン、データ化。確定申告や経費精算に最適。個人情報不要でプライバシーを保護。',
     },
-  ];
+  ]
 }
 
 export function loader({ context }: Route.LoaderArgs) {
-  return { message: context.cloudflare.env.VALUE_FROM_CLOUDFLARE };
+  return { message: context.cloudflare.env.VALUE_FROM_CLOUDFLARE }
 }
 
 export default function Home() {
+  const [open, setOpen] = useState(false)
+
+  const handleStartScan = () => {
+    setOpen(true)
+  }
+
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="container mx-auto py-4 px-4 flex justify-between items-center">
+      <header className="container mx-auto flex items-center justify-between px-4 py-4">
         <div className="flex items-center gap-2">
           <Camera className="h-6 w-6 text-blue-500" />
           <span className="text-xl font-bold">領収書スキャナー</span>
@@ -47,13 +50,13 @@ export default function Home() {
       </header>
 
       {/* Hero Section */}
-      <section className="bg-gradient-to-b from-blue-50 to-white py-16 px-4">
-        <div className="container mx-auto max-w-6xl flex flex-col md:flex-row items-center gap-8">
+      <section className="bg-gradient-to-b from-blue-50 to-white px-4 py-16">
+        <div className="container mx-auto flex max-w-6xl flex-col items-center gap-8 md:flex-row">
           <div className="flex-1 space-y-6">
-            <h1 className="text-4xl md:text-5xl font-bold text-gray-900">
+            <h1 className="text-4xl font-bold text-gray-900 md:text-5xl">
               領収書スキャナー
               <br />
-              <span className="text-3xl md:text-4xl text-muted-foreground">
+              <span className="text-muted-foreground text-3xl md:text-4xl">
                 登録不要・完全無料
               </span>
             </h1>
@@ -62,10 +65,10 @@ export default function Home() {
               <br />
               確定申告も簡単に。
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row">
               <Button
                 size="lg"
-                className="bg-orange-500 hover:bg-orange-600 text-lg"
+                className="bg-orange-500 text-lg hover:bg-orange-600"
               >
                 今すぐスキャン開始
               </Button>
@@ -73,24 +76,24 @@ export default function Home() {
                 デモを見る
               </Button> */}
             </div>
-            <div className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">
+            <div className="inline-block rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
               すでに10,000人以上が利用中！
             </div>
           </div>
 
-          <div className="flex-1 relative h-[400px] w-full ">
+          <div className="relative h-[400px] w-full flex-1">
             <div className="flex items-center justify-center">
-              <div className="relative w-[280px] h-[560px] border-8 border-gray-800 rounded-[36px] overflow-hidden shadow-xl bg-white">
-                <div className="absolute top-0 left-0 right-0 h-6 bg-gray-800 flex justify-center items-end pb-1">
-                  <div className="w-20 h-1.5 bg-gray-600 rounded-full" />
+              <div className="relative h-[560px] w-[280px] overflow-hidden rounded-[36px] border-8 border-gray-800 bg-white shadow-xl">
+                <div className="absolute top-0 right-0 left-0 flex h-6 items-end justify-center bg-gray-800 pb-1">
+                  <div className="h-1.5 w-20 rounded-full bg-gray-600" />
                 </div>
-                <div className="pt-6 px-2 h-full">
-                  <div className="bg-gray-100 h-full rounded-lg flex items-center justify-center">
-                    <div className="relative w-full h-[70%] flex items-center justify-center">
-                      <div className="absolute border-2 border-dashed border-blue-500 w-[80%] h-[60%] rounded-md flex items-center justify-center">
+                <div className="h-full px-2 pt-6">
+                  <div className="flex h-full items-center justify-center rounded-lg bg-gray-100">
+                    <div className="relative flex h-[70%] w-full items-center justify-center">
+                      <div className="absolute flex h-[60%] w-[80%] items-center justify-center rounded-md border-2 border-dashed border-blue-500">
                         <FileText className="h-16 w-16 text-blue-500 opacity-50" />
                       </div>
-                      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white px-4 py-2 rounded-md text-sm">
+                      <div className="absolute bottom-10 left-1/2 -translate-x-1/2 transform rounded-md bg-blue-500 px-4 py-2 text-sm text-white">
                         領収書を枠内に合わせてください
                       </div>
                     </div>
@@ -103,33 +106,33 @@ export default function Home() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 px-4 bg-white">
+      <section className="bg-white px-4 py-16">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-center mb-12">特徴</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
-              <div className="mx-auto bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+          <h2 className="mb-12 text-center text-3xl font-bold">特徴</h2>
+          <div className="grid gap-8 md:grid-cols-3">
+            <div className="rounded-xl border border-gray-100 bg-white p-6 text-center shadow-sm">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
                 <CheckCircle className="h-8 w-8 text-blue-500" />
               </div>
-              <h3 className="text-xl font-bold mb-3">登録不要・完全無料</h3>
+              <h3 className="mb-3 text-xl font-bold">登録不要・完全無料</h3>
               <p className="text-gray-600">
                 アカウント作成なし、メールアドレス不要。余計な手続きゼロでスキャン開始できます。
               </p>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
-              <div className="mx-auto bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+            <div className="rounded-xl border border-gray-100 bg-white p-6 text-center shadow-sm">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
                 <Smartphone className="h-8 w-8 text-blue-500" />
               </div>
-              <h3 className="text-xl font-bold mb-3">スマホで簡単スキャン</h3>
+              <h3 className="mb-3 text-xl font-bold">スマホで簡単スキャン</h3>
               <p className="text-gray-600">
                 領収書を自動検出してスマートスキャン。複数の領収書もサクサク処理できます。
               </p>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 text-center">
-              <div className="mx-auto bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mb-4">
+            <div className="rounded-xl border border-gray-100 bg-white p-6 text-center shadow-sm">
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
                 <Shield className="h-8 w-8 text-blue-500" />
               </div>
-              <h3 className="text-xl font-bold mb-3">プライバシー保護</h3>
+              <h3 className="mb-3 text-xl font-bold">プライバシー保護</h3>
               <p className="text-gray-600">
                 データはあなたのブラウザにのみ保存。サーバーにデータを送信しない安心設計です。
               </p>
@@ -139,10 +142,10 @@ export default function Home() {
       </section>
 
       {/* How to Use Section */}
-      <section className="py-16 px-4 bg-gray-50">
+      <section className="bg-gray-50 px-4 py-16">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-center mb-12">使い方</h2>
-          <div className="grid md:grid-cols-5 gap-4 mb-8">
+          <h2 className="mb-12 text-center text-3xl font-bold">使い方</h2>
+          <div className="mb-8 grid gap-4 md:grid-cols-5">
             {[
               { step: 1, title: 'サイトにアクセス', desc: 'アプリ不要' },
               { step: 2, title: 'カメラを起動', desc: '領収書にかざす' },
@@ -150,17 +153,17 @@ export default function Home() {
               { step: 4, title: '情報を自動認識', desc: '日付・金額・店舗名' },
               { step: 5, title: '出力', desc: 'CSVやPDFで保存' },
             ].map((item) => (
-              <div key={item.step} className="text-center relative">
-                <div className="bg-white w-16 h-16 rounded-full border-2 border-blue-500 flex items-center justify-center mx-auto mb-4 relative z-10">
+              <div key={item.step} className="relative text-center">
+                <div className="relative z-10 mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full border-2 border-blue-500 bg-white">
                   <span className="text-xl font-bold text-blue-500">
                     {item.step}
                   </span>
                 </div>
                 {item.step < 5 && (
-                  <div className="hidden md:block absolute top-8 left-[60%] w-[80%] h-0.5 bg-blue-200" />
+                  <div className="absolute top-8 left-[60%] hidden h-0.5 w-[80%] bg-blue-200 md:block" />
                 )}
-                <h3 className="text-lg font-bold mb-1">{item.title}</h3>
-                <p className="text-gray-600 text-sm">{item.desc}</p>
+                <h3 className="mb-1 text-lg font-bold">{item.title}</h3>
+                <p className="text-sm text-gray-600">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -173,12 +176,12 @@ export default function Home() {
       </section>
 
       {/* Use Cases Section */}
-      <section className="py-16 px-4 bg-white">
+      <section className="bg-white px-4 py-16">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-center mb-12">ユースケース</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-              <div className="mb-4 h-72 bg-gray-100 rounded-lg flex items-center justify-center">
+          <h2 className="mb-12 text-center text-3xl font-bold">ユースケース</h2>
+          <div className="grid gap-8 md:grid-cols-3">
+            <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+              <div className="mb-4 flex h-72 items-center justify-center rounded-lg bg-gray-100">
                 <img
                   src="/images/usecase-1.png"
                   alt="確定申告イメージ"
@@ -187,30 +190,30 @@ export default function Home() {
                   className="rounded-lg"
                 />
               </div>
-              <h3 className="text-xl font-bold mb-3">確定申告に最適</h3>
-              <ul className="text-gray-600 space-y-2 list-disc pl-5">
+              <h3 className="mb-3 text-xl font-bold">確定申告に最適</h3>
+              <ul className="list-disc space-y-2 pl-5 text-gray-600">
                 <li>医療費控除、経費精算が簡単に</li>
                 <li>年間の領収書をまとめて管理</li>
               </ul>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-              <div className="mb-4 h-72 bg-gray-100 rounded-lg flex items-center justify-center">
+            <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+              <div className="mb-4 flex h-72 items-center justify-center rounded-lg bg-gray-100">
                 <img
                   src="/images/usecase-2.png"
                   alt="経費精算イメージ"
                   width={500}
                   height={500}
-                  className="rounded-lg w-auto h-auto"
+                  className="h-auto w-auto rounded-lg"
                 />
               </div>
-              <h3 className="text-xl font-bold mb-3">経費精算をスムーズに</h3>
-              <ul className="text-gray-600 space-y-2 list-disc pl-5">
+              <h3 className="mb-3 text-xl font-bold">経費精算をスムーズに</h3>
+              <ul className="list-disc space-y-2 pl-5 text-gray-600">
                 <li>仕事の経費をさっと電子化</li>
                 <li>CSV出力で会社提出もラクラク</li>
               </ul>
             </div>
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-              <div className="mb-4 h-72 bg-gray-100 rounded-lg flex items-center justify-center">
+            <div className="rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
+              <div className="mb-4 flex h-72 items-center justify-center rounded-lg bg-gray-100">
                 <img
                   src="/images/usecase-3.png"
                   alt="領収書作成イメージ"
@@ -219,14 +222,14 @@ export default function Home() {
                   className="rounded-lg"
                 />
               </div>
-              <h3 className="text-xl font-bold mb-3">領収書作成も可能</h3>
-              <ul className="text-gray-600 space-y-2 list-disc pl-5">
+              <h3 className="mb-3 text-xl font-bold">領収書作成も可能</h3>
+              <ul className="list-disc space-y-2 pl-5 text-gray-600">
                 <li>シンプルな領収書PDFを素早く作成</li>
                 <li>メールやSNSでそのまま共有</li>
               </ul>
             </div>
           </div>
-          <div className="text-center mt-10">
+          <div className="mt-10 text-center">
             <Button className="bg-orange-500 hover:bg-orange-600">
               無料ではじめる
             </Button>
@@ -273,19 +276,19 @@ export default function Home() {
       </section> */}
 
       {/* Social Proof Section */}
-      <section className="py-16 px-4 bg-white">
+      <section className="bg-white px-4 py-16">
         <div className="container mx-auto max-w-6xl">
-          <h2 className="text-3xl font-bold text-center mb-4">ユーザーの声</h2>
-          <p className="text-center text-gray-600 mb-12">
+          <h2 className="mb-4 text-center text-3xl font-bold">ユーザーの声</h2>
+          <p className="mb-12 text-center text-gray-600">
             すでに10,000人以上が利用しています
           </p>
 
-          <div className="flex justify-center mb-8">
+          <div className="mb-8 flex justify-center">
             <div className="flex">
               {[1, 2, 3, 4, 5].map((star) => (
                 <svg
                   key={star}
-                  className="w-6 h-6 text-yellow-400 fill-current"
+                  className="h-6 w-6 fill-current text-yellow-400"
                   viewBox="0 0 24 24"
                 >
                   <title>{star >= 4 ? 'star' : 'star outline'}</title>
@@ -293,10 +296,10 @@ export default function Home() {
                 </svg>
               ))}
             </div>
-            <span className="ml-2 text-gray-700 font-medium">4.8/5</span>
+            <span className="ml-2 font-medium text-gray-700">4.8/5</span>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid gap-6 md:grid-cols-3">
             {[
               {
                 name: '田中 健太',
@@ -318,8 +321,8 @@ export default function Home() {
               },
             ].map((testimonial, i) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
-              <div key={i} className="bg-blue-50 p-6 rounded-xl">
-                <div className="flex items-center mb-4">
+              <div key={i} className="rounded-xl bg-blue-50 p-6">
+                <div className="mb-4 flex items-center">
                   <Avatar className="size-12">
                     <AvatarFallback>
                       {testimonial.name.charAt(0)}
@@ -342,14 +345,14 @@ export default function Home() {
       </section>
 
       {/* FAQ Section */}
-      <section className="py-16 px-4 bg-gray-50">
+      <section className="bg-gray-50 px-4 py-16">
         <div className="container mx-auto max-w-3xl">
-          <h2 className="text-3xl font-bold text-center mb-12">よくある質問</h2>
+          <h2 className="mb-12 text-center text-3xl font-bold">よくある質問</h2>
 
           <Accordion
             type="single"
             collapsible
-            className="bg-white rounded-xl shadow-sm"
+            className="rounded-xl bg-white shadow-sm"
           >
             <AccordionItem value="item-1">
               <AccordionTrigger className="px-6 py-4 hover:no-underline">
@@ -388,35 +391,35 @@ export default function Home() {
       </section>
 
       {/* Final CTA Section */}
-      <section className="py-16 px-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+      <section className="bg-gradient-to-r from-blue-500 to-blue-600 px-4 py-16 text-white">
         <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl md:text-4xl font-bold mb-6">
+          <h2 className="mb-6 text-3xl font-bold md:text-4xl">
             さあ、領収書の山とサヨナラしよう
           </h2>
-          <p className="text-xl mb-8">
+          <p className="mb-8 text-xl">
             今すぐスマホを使って、領収書管理を始めましょう
           </p>
 
           <div>
             <Button
               size="lg"
-              className="bg-orange-500 hover:bg-orange-600 text-lg px-8"
+              className="bg-orange-500 px-8 text-lg hover:bg-orange-600"
             >
               スキャン開始
             </Button>
           </div>
 
-          <div className="mt-4 inline-block bg-blue-400 bg-opacity-30 px-4 py-2 rounded-full">
+          <div className="bg-opacity-30 mt-4 inline-block rounded-full bg-blue-400 px-4 py-2">
             登録不要・完全無料
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-800 text-gray-300 py-12 px-4">
+      <footer className="bg-gray-800 px-4 py-12 text-gray-300">
         <div className="container mx-auto max-w-6xl">
-          <div className="flex flex-col md:flex-row justify-between items-center mb-8">
-            <div className="flex items-center gap-2 mb-4 md:mb-0">
+          <div className="mb-8 flex flex-col items-center justify-between md:flex-row">
+            <div className="mb-4 flex items-center gap-2 md:mb-0">
               <Camera className="h-6 w-6 text-blue-400" />
               <span className="text-xl font-bold text-white">
                 領収書スキャナー
@@ -434,12 +437,16 @@ export default function Home() {
               </Link>
             </div>
           </div>
-          <div className="text-center text-gray-500 text-sm">
+          <div className="text-center text-sm text-gray-500">
             &copy; {new Date().getFullYear()} 領収書スキャナー All rights
             reserved.
           </div>
         </div>
       </footer>
+
+      <Popover open={open}>
+        <PopoverContent>やあ！</PopoverContent>
+      </Popover>
     </div>
-  );
+  )
 }
