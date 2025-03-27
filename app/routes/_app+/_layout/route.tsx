@@ -1,6 +1,20 @@
-import { Outlet } from 'react-router'
+import { Link, Outlet } from 'react-router'
+import { match } from 'ts-pattern'
 import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs'
-export default function ReceiptScannerLayout() {
+import type { Route } from './+types/route'
+
+export const loader = ({ request }: Route.LoaderArgs) => {
+  const url = new URL(request.url)
+  const tab = match(url.pathname)
+    .with('/scan', () => 'scan')
+    .with('/history', () => 'history')
+    .otherwise(() => 'scan')
+  return { tab }
+}
+
+export default function ReceiptScannerLayout({
+  loaderData: { tab },
+}: Route.ComponentProps) {
   return (
     <div className="receipt-scanner container mx-auto max-w-5xl px-4 py-6">
       <header className="mb-8 text-center">
@@ -12,10 +26,14 @@ export default function ReceiptScannerLayout() {
         </p>
       </header>
 
-      <Tabs defaultValue="scan" className="mb-8">
+      <Tabs defaultValue={tab} className="mb-8">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="scan">スキャン</TabsTrigger>
-          <TabsTrigger value="history">履歴</TabsTrigger>
+          <TabsTrigger value="scan" asChild>
+            <Link to="/scan">スキャン</Link>
+          </TabsTrigger>
+          <TabsTrigger value="history" asChild>
+            <Link to="/history">履歴</Link>
+          </TabsTrigger>
         </TabsList>
       </Tabs>
 
