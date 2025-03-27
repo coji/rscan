@@ -5,7 +5,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLoaderData,
+  useRouteLoaderData,
 } from 'react-router'
 
 import type { Route } from './+types/root'
@@ -34,7 +34,10 @@ export const loader = ({ request, context }: Route.LoaderArgs) => {
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { isProd, env } = useLoaderData<typeof loader>()
+  const rootLoaderData = useRouteLoaderData('root')
+  console.log({ rootLoaderData })
+  const { isProd, env } = rootLoaderData ?? { isProd: false, env: {} }
+
   return (
     <html lang="en">
       <head>
