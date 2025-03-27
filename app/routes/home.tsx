@@ -384,12 +384,6 @@ export default function Home() {
               </AccordionContent>
             </AccordionItem>
           </Accordion>
-
-          <div className="text-center mt-8">
-            <Button className="bg-orange-500 hover:bg-orange-600">
-              さっそく使ってみる
-            </Button>
-          </div>
         </div>
       </section>
 
@@ -402,14 +396,17 @@ export default function Home() {
           <p className="text-xl mb-8">
             今すぐスマホを使って、領収書管理を始めましょう
           </p>
-          <Button
-            size="lg"
-            className="bg-orange-500 hover:bg-orange-600 text-lg px-8"
-          >
-            スキャン開始
-          </Button>
 
-          <div className="ml-4 mt-4 inline-block bg-blue-400 bg-opacity-30 px-4 py-2 rounded-full">
+          <div>
+            <Button
+              size="lg"
+              className="bg-orange-500 hover:bg-orange-600 text-lg px-8"
+            >
+              スキャン開始
+            </Button>
+          </div>
+
+          <div className="mt-4 inline-block bg-blue-400 bg-opacity-30 px-4 py-2 rounded-full">
             登録不要・完全無料
           </div>
         </div>
