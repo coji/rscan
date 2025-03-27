@@ -1,6 +1,8 @@
-import { type RouteConfig, index, route } from '@react-router/dev/routes'
+import { remixRoutesOptionAdapter } from '@react-router/remix-routes-option-adapter'
+import { flatRoutes } from 'remix-flat-routes'
 
-export default [
-  index('routes/home.tsx'),
-  route('demo', 'routes/demo.tsx'),
-] satisfies RouteConfig
+export default remixRoutesOptionAdapter((defineRoute) =>
+  flatRoutes('routes', defineRoute, {
+    ignoredRouteFiles: ['**/index.ts', '**/_shared/**'],
+  }),
+)
