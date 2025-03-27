@@ -58,7 +58,9 @@ export default function Home() {
               </span>
             </h1>
             <p className="text-xl text-gray-700">
-              スマホでサクッと一気にスキャン、確定申告も簡単に
+              スマホでサクッと一気にスキャン
+              <br />
+              確定申告も簡単に。
             </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
@@ -75,8 +77,9 @@ export default function Home() {
               すでに10,000人以上が利用中！
             </div>
           </div>
-          <div className="flex-1 relative h-[400px] w-full">
-            <div className="absolute inset-0 flex items-center justify-center">
+
+          <div className="flex-1 relative h-[400px] w-full ">
+            <div className="flex items-center justify-center">
               <div className="relative w-[280px] h-[560px] border-8 border-gray-800 rounded-[36px] overflow-hidden shadow-xl bg-white">
                 <div className="absolute top-0 left-0 right-0 h-6 bg-gray-800 flex justify-center items-end pb-1">
                   <div className="w-20 h-1.5 bg-gray-600 rounded-full" />
