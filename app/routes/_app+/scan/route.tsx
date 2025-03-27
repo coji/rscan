@@ -280,7 +280,7 @@ export default function ScannerPage({ actionData }: Route.ComponentProps) {
         // バッチに追加
         setScannedBatch((prev) => [...prev, newReceipt])
         resolve()
-      }, 1000)
+      }, 100)
     })
   }
 
