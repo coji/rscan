@@ -14,13 +14,6 @@ import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
 import { Calendar } from '~/components/ui/calendar'
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '~/components/ui/card'
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -222,14 +215,15 @@ export default function HistoryPage({
         </Alert>
       )}
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+      <div className="grid gap-4">
+        <div className="flex flex-row items-center justify-between">
           <div>
-            <CardTitle>スキャン履歴</CardTitle>
-            <CardDescription>
+            <h2 className="text-2xl font-bold">スキャン履歴</h2>
+            <p className="text-muted-foreground">
               これまでにスキャンした領収書データ
-            </CardDescription>
+            </p>
           </div>
+
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -248,9 +242,9 @@ export default function HistoryPage({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
-        </CardHeader>
+        </div>
 
-        <CardContent>
+        <div>
           {receipts.length === 0 ? (
             <div className="text-muted-foreground flex flex-col items-center justify-center py-8 text-center">
               <AlertTriangleIcon className="mb-4 h-12 w-12 opacity-20" />
@@ -311,8 +305,8 @@ export default function HistoryPage({
               </div>
             </ScrollArea>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* 編集ダイアログ */}
       {editReceipt && (

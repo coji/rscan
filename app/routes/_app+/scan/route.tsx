@@ -11,13 +11,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigation, useSubmit } from 'react-router'
 import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '~/components/ui/card'
 import { Input } from '~/components/ui/input'
 import { ScrollArea } from '~/components/ui/scroll-area'
 import { Separator } from '~/components/ui/separator'
@@ -351,14 +344,15 @@ export default function ScannerPage({ actionData }: Route.ComponentProps) {
         </Alert>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>領収書一括スキャン</CardTitle>
-          <CardDescription>
+      <div className="grid gap-4">
+        <div>
+          <h2 className="text-2xl font-bold">領収書一括スキャン</h2>
+          <p className="text-muted-foreground text-sm">
             複数の領収書を連続してスキャンし、まとめて保存できます
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+
+        <div>
           {!batchScanMode ? (
             <div className="space-y-6">
               <div className="flex flex-col justify-center gap-4 sm:flex-row">
@@ -505,8 +499,8 @@ export default function ScannerPage({ actionData }: Route.ComponentProps) {
               )}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </>
   )
 }
