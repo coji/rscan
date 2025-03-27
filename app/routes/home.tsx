@@ -1,4 +1,5 @@
 import { AvatarImage } from '@radix-ui/react-avatar'
+import { DialogDescription } from '@radix-ui/react-dialog'
 import { Camera, CheckCircle, FileText, Shield, Smartphone } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
@@ -10,6 +11,13 @@ import {
 } from '~/components/ui/accordion'
 import { Avatar, AvatarFallback } from '~/components/ui/avatar'
 import { Button } from '~/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '~/components/ui/dialog'
 import type { Route } from './+types/home'
 
 export function meta() {
@@ -45,9 +53,10 @@ export default function Home() {
         <Button
           variant="default"
           className="bg-orange-500 hover:bg-orange-600"
-          asChild
+          type="button"
+          onClick={handleStartScan}
         >
-          <Link to="/scan">スキャン開始</Link>
+          スキャン開始
         </Button>
       </header>
 
@@ -71,6 +80,8 @@ export default function Home() {
               <Button
                 size="lg"
                 className="bg-orange-500 text-lg hover:bg-orange-600"
+                type="button"
+                onClick={handleStartScan}
               >
                 今すぐスキャン開始
               </Button>
@@ -170,7 +181,11 @@ export default function Home() {
             ))}
           </div>
           <div className="text-center">
-            <Button className="bg-orange-500 hover:bg-orange-600">
+            <Button
+              className="bg-orange-500 hover:bg-orange-600"
+              type="button"
+              onClick={handleStartScan}
+            >
               試してみる
             </Button>
           </div>
@@ -232,7 +247,11 @@ export default function Home() {
             </div>
           </div>
           <div className="mt-10 text-center">
-            <Button className="bg-orange-500 hover:bg-orange-600">
+            <Button
+              className="bg-orange-500 hover:bg-orange-600"
+              type="button"
+              onClick={handleStartScan}
+            >
               無料ではじめる
             </Button>
           </div>
@@ -406,6 +425,8 @@ export default function Home() {
             <Button
               size="lg"
               className="bg-orange-500 px-8 text-lg hover:bg-orange-600"
+              type="button"
+              onClick={handleStartScan}
             >
               スキャン開始
             </Button>
@@ -416,6 +437,27 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>まだ未実装です</DialogTitle>
+            <DialogDescription>
+              この機能はまだ未実装です。ごめんなさい！
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter>
+            <Button
+              variant="default"
+              type="button"
+              onClick={() => setOpen(false)}
+            >
+              閉じる
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Footer */}
       <footer className="bg-gray-800 px-4 py-12 text-gray-300">
