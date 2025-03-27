@@ -9,17 +9,10 @@ import {
   EditIcon,
   ScanIcon,
   UploadIcon,
+  XIcon,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import {
-  Form,
-  Link,
-  useActionData,
-  useLoaderData,
-  useNavigation,
-  useSubmit,
-  type ClientActionFunctionArgs,
-} from 'react-router'
+import { Form, Link, useNavigation, useSubmit } from 'react-router'
 import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
 import { Badge } from '~/components/ui/badge'
 import { Button } from '~/components/ui/button'
@@ -38,7 +31,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '~/components/ui/dialog'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
@@ -63,7 +55,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '~/components/ui/tooltip'
-import type { Route } from '~/types/home'
+import type { Route } from './+types/demo'
 
 // クライアント側のローダー
 export const clientLoader = async () => {
@@ -80,9 +72,30 @@ export const clientLoader = async () => {
 clientLoader.hydrateRoot = true
 
 // クライアント側のアクション
-export const clientAction = async ({ request }: ClientActionFunctionArgs) => {
+export const clientAction = async ({ request }: Route.ClientActionArgs) => {
   const formData = await request.formData()
   const action = formData.get('_action')
+
+  if (action === 'scan_batch') {
+    const receiptsData = JSON.parse(formData.get('receiptsData') as string)
+
+    try {
+      const db = await openDatabase()
+
+      // 複数の領収書を保存
+      for (const receipt of receiptsData) {
+        await saveReceipt(db, receipt)
+      }
+
+      return {
+        success: true,
+        message: `${receiptsData.length}件の領収書を保存しました`,
+      }
+    } catch (error) {
+      console.error('保存に失敗しました:', error)
+      return { success: false, error: String(error) }
+    }
+  }
 
   if (action === 'scan') {
     const imageData = formData.get('imageData')
@@ -118,6 +131,38 @@ export const clientAction = async ({ request }: ClientActionFunctionArgs) => {
       const receipts = await getAllReceipts(db)
       const csvContent = generateCSV(receipts)
       return { success: true, csvContent }
+    } catch (error) {
+      return { success: false, error: String(error) }
+    }
+  }
+
+  if (action === 'update') {
+    const id = formData.get('id')?.toString()
+    if (!id) return { success: false, error: '領収書IDが指定されていません' }
+
+    try {
+      const db = await openDatabase()
+      const receipt = await getReceiptById(db, id)
+
+      if (!receipt) {
+        return { success: false, error: '領収書が見つかりません' }
+      }
+
+      // 更新するフィールドを設定
+      const updatedReceipt: Receipt = {
+        ...receipt,
+        date: formData.get('date')?.toString() || receipt.date,
+        amount: formData.get('amount')?.toString() || receipt.amount,
+        store: formData.get('store')?.toString() || receipt.store,
+        category: formData.get('category')?.toString() || receipt.category,
+      }
+
+      await saveReceipt(db, updatedReceipt)
+      return {
+        success: true,
+        receipt: updatedReceipt,
+        message: '領収書を更新しました',
+      }
     } catch (error) {
       return { success: false, error: String(error) }
     }
@@ -167,6 +212,23 @@ async function saveReceipt(db: IDBDatabase, receipt: Receipt): Promise<void> {
   })
 }
 
+async function getReceiptById(
+  db: IDBDatabase,
+  id: string,
+): Promise<Receipt | null> {
+  return new Promise((resolve, reject) => {
+    const transaction = db.transaction(['receipts'], 'readonly')
+    const store = transaction.objectStore('receipts')
+    const request = store.get(id)
+
+    request.onsuccess = (event) => {
+      const result = (event.target as IDBRequest).result
+      resolve(result || null)
+    }
+    request.onerror = (event) => reject((event.target as IDBRequest).error)
+  })
+}
+
 async function getAllReceipts(db: IDBDatabase): Promise<Receipt[]> {
   return new Promise((resolve, reject) => {
     const transaction = db.transaction(['receipts'], 'readonly')
@@ -195,22 +257,26 @@ function generateCSV(receipts: Receipt[]): string {
 }
 
 // メインコンポーネント
-export default function ReceiptScanner() {
-  const loaderData = useLoaderData<Route['LoaderData']>()
-  const actionData = useActionData<Route['ActionData']>()
+export default function ReceiptScanner({
+  loaderData,
+  actionData,
+}: Route.ComponentProps) {
   const navigation = useNavigation()
   const submit = useSubmit()
   const [receipts, setReceipts] = useState<Receipt[]>([])
-  const [scanStep, setScanStep] = useState(0)
-  const [previewImage, setPreviewImage] = useState<string | null>(null)
-  const [recognizedData, setRecognizedData] = useState({
-    date: new Date(),
-    amount: '',
-    store: '',
-    category: '未分類',
-  })
   const [activeTab, setActiveTab] = useState('scanner')
   const [showSuccessAlert, setShowSuccessAlert] = useState(false)
+  const [alertMessage, setAlertMessage] = useState('')
+
+  // バッチスキャン用のステート
+  const [batchScanMode, setBatchScanMode] = useState(false)
+  const [scannedBatch, setScannedBatch] = useState<Receipt[]>([])
+  const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [isCapturing, setIsCapturing] = useState(false)
+
+  // 編集用のステート
+  const [editReceipt, setEditReceipt] = useState<Receipt | null>(null)
+  const [showEditDialog, setShowEditDialog] = useState(false)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -227,7 +293,15 @@ export default function ReceiptScanner() {
   useEffect(() => {
     if (actionData?.success) {
       setShowSuccessAlert(true)
+      setAlertMessage(actionData.message || '処理が完了しました')
       setTimeout(() => setShowSuccessAlert(false), 3000)
+
+      // バッチスキャンモードを終了
+      if (actionData.message?.includes('件の領収書')) {
+        setBatchScanMode(false)
+        setScannedBatch([])
+        stopCamera()
+      }
     }
   }, [actionData])
 
@@ -248,7 +322,7 @@ export default function ReceiptScanner() {
         await videoRef.current.play()
       }
 
-      setScanStep(1)
+      setBatchScanMode(true)
     } catch (error) {
       console.error('カメラの起動に失敗しました:', error)
       alert(
@@ -257,9 +331,25 @@ export default function ReceiptScanner() {
     }
   }
 
+  // カメラ停止
+  const stopCamera = () => {
+    if (!videoRef.current) return
+
+    const stream = videoRef.current.srcObject as MediaStream
+    if (stream) {
+      const tracks = stream.getTracks()
+      for (const track of tracks) {
+        track.stop()
+      }
+      videoRef.current.srcObject = null
+    }
+  }
+
   // 写真を撮影
-  const captureImage = () => {
+  const captureImage = async () => {
     if (!videoRef.current || !canvasRef.current) return
+
+    setIsCapturing(true)
 
     const video = videoRef.current
     const canvas = canvasRef.current
@@ -277,85 +367,104 @@ export default function ReceiptScanner() {
     const imageData = canvas.toDataURL('image/jpeg')
     setPreviewImage(imageData)
 
-    // カメラのストリームを停止
-    const stream = video.srcObject as MediaStream
-    if (stream) {
-      const tracks = stream.getTracks()
-      for (const track of tracks) {
-        track.stop()
-      }
-      video.srcObject = null
-    }
+    // 仮の領収書データを生成（OCRシミュレーション）
+    await simulateOCR(imageData)
 
-    // OCR処理（モックデータ）
-    simulateOCR(imageData)
-
-    setScanStep(2)
+    setIsCapturing(false)
   }
 
-  // ファイルから画像を選択
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]
-    if (!file) return
+  // ファイルから画像を選択（バッチ用）
+  const handleFileSelect = async (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const files = event.target.files
+    if (!files || files.length === 0) return
 
-    const reader = new FileReader()
-    reader.onload = (e: ProgressEvent<FileReader>) => {
-      const result = e.target?.result
-      if (typeof result === 'string') {
-        setPreviewImage(result)
-        simulateOCR(result)
-        setScanStep(2)
-      }
+    setBatchScanMode(true)
+
+    // 複数ファイルを順番に処理
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      const reader = new FileReader()
+
+      // Promise化して順番に処理
+      await new Promise<void>((resolve) => {
+        reader.onload = async (e: ProgressEvent<FileReader>) => {
+          const result = e.target?.result
+          if (typeof result === 'string') {
+            setPreviewImage(result)
+            await simulateOCR(result)
+            resolve()
+          }
+        }
+        reader.readAsDataURL(file)
+      })
     }
-    reader.readAsDataURL(file)
   }
 
   // OCRのシミュレーション
-  const simulateOCR = (imageData: string) => {
-    // 実際のアプリでは、ここでOCR APIを呼び出す
-    // デモ用にランダムなデータを生成
-    setTimeout(() => {
-      const today = new Date()
-      const randomAmount = Math.floor(Math.random() * 10000) + 100
-      const stores = ['コンビニ', 'スーパー', 'カフェ', 'レストラン', '書店']
-      const randomStore = stores[Math.floor(Math.random() * stores.length)]
+  const simulateOCR = async (imageData: string): Promise<void> => {
+    return new Promise((resolve) => {
+      // 実際のアプリでは、ここでOCR APIを呼び出す
+      // デモ用にランダムなデータを生成
+      setTimeout(() => {
+        const today = new Date()
+        const randomAmount = Math.floor(Math.random() * 10000) + 100
+        const stores = ['コンビニ', 'スーパー', 'カフェ', 'レストラン', '書店']
+        const randomStore = stores[Math.floor(Math.random() * stores.length)]
 
-      setRecognizedData({
-        date: today,
-        amount: randomAmount.toString(),
-        store: randomStore,
-        category: '未分類',
-      })
-    }, 1000)
+        // 新しい領収書を作成
+        const newReceipt: Receipt = {
+          id: Date.now().toString(),
+          image: imageData,
+          date: format(today, 'yyyy-MM-dd'),
+          amount: randomAmount.toString(),
+          store: randomStore,
+          category: '未分類',
+          timestamp: new Date().toISOString(),
+        }
+
+        // バッチに追加
+        setScannedBatch((prev) => [...prev, newReceipt])
+        resolve()
+      }, 1000)
+    })
   }
 
-  // 領収書データを保存
-  const saveReceiptData = (event: React.FormEvent<HTMLFormElement>) => {
+  // バッチスキャンを保存
+  const saveBatchReceipts = () => {
+    if (scannedBatch.length === 0) return
+
+    const formData = new FormData()
+    formData.append('_action', 'scan_batch')
+    formData.append('receiptsData', JSON.stringify(scannedBatch))
+
+    submit(formData, { method: 'post' })
+  }
+
+  // 領収書をバッチから削除
+  const removeFromBatch = (id: string) => {
+    setScannedBatch((prev) => prev.filter((receipt) => receipt.id !== id))
+  }
+
+  // 編集モードを開始
+  const startEdit = (receipt: Receipt) => {
+    setEditReceipt(receipt)
+    setShowEditDialog(true)
+  }
+
+  // 編集内容を保存
+  const saveEditedReceipt = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
 
+    if (!editReceipt) return
+
     const formData = new FormData(event.currentTarget)
-    if (previewImage) {
-      formData.append('imageData', previewImage)
-    }
-    formData.append('_action', 'scan')
-    formData.append('date', format(recognizedData.date, 'yyyy-MM-dd'))
+    formData.append('_action', 'update')
+    formData.append('id', editReceipt.id)
 
-    submit(formData, {
-      method: 'post',
-    })
-
-    // 保存完了後、スキャンステップをリセット
-    setScanStep(0)
-    setPreviewImage(null)
-    setRecognizedData({
-      date: new Date(),
-      amount: '',
-      store: '',
-      category: '未分類',
-    })
-
-    // タブを履歴に切り替え
-    setActiveTab('history')
+    submit(formData, { method: 'post' })
+    setShowEditDialog(false)
   }
 
   // CSVエクスポート
@@ -387,17 +496,15 @@ export default function ReceiptScanner() {
           領収書スキャナー
         </h1>
         <p className="text-muted-foreground text-lg">
-          登録不要・完全無料で領収書をサクッと電子化
+          登録不要・完全無料で領収書をまとめて電子化
         </p>
       </header>
 
       {showSuccessAlert && (
         <Alert className="mb-4 border-green-200 bg-green-50">
           <CheckCircleIcon className="h-4 w-4 text-green-600" />
-          <AlertTitle>保存完了</AlertTitle>
-          <AlertDescription>
-            領収書データの保存に成功しました。
-          </AlertDescription>
+          <AlertTitle>処理完了</AlertTitle>
+          <AlertDescription>{alertMessage}</AlertDescription>
         </Alert>
       )}
 
@@ -415,13 +522,13 @@ export default function ReceiptScanner() {
         <TabsContent value="scanner">
           <Card>
             <CardHeader>
-              <CardTitle>領収書スキャン</CardTitle>
+              <CardTitle>領収書一括スキャン</CardTitle>
               <CardDescription>
-                カメラで撮影するか、画像ファイルをアップロードしてください
+                複数の領収書を連続してスキャンし、まとめて保存できます
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {scanStep === 0 && (
+              {!batchScanMode ? (
                 <div className="space-y-6">
                   <div className="flex flex-col justify-center gap-4 sm:flex-row">
                     <Button
@@ -429,13 +536,14 @@ export default function ReceiptScanner() {
                       className="flex items-center gap-2"
                     >
                       <CameraIcon className="h-4 w-4" />
-                      カメラで撮影
+                      カメラでスキャン開始
                     </Button>
                     <div className="relative">
                       <Input
                         type="file"
                         ref={fileInputRef}
                         accept="image/*"
+                        multiple
                         onChange={handleFileSelect}
                         className="hidden"
                       />
@@ -459,38 +567,24 @@ export default function ReceiptScanner() {
                         <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full font-bold">
                           1
                         </div>
-                        <p>カメラを起動して領収書にかざす</p>
+                        <p>カメラを起動して領収書を次々スキャン</p>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full font-bold">
                           2
                         </div>
-                        <p>自動検出された領収書をスキャン</p>
+                        <p>スキャン完了後、まとめて自動保存</p>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full font-bold">
                           3
                         </div>
-                        <p>日付・金額・店舗名などを自動認識</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full font-bold">
-                          4
-                        </div>
-                        <p>必要に応じてデータを編集</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full font-bold">
-                          5
-                        </div>
-                        <p>保存してCSVやPDFで出力</p>
+                        <p>あとから履歴で各領収書を詳細編集</p>
                       </div>
                     </div>
                   </div>
                 </div>
-              )}
-
-              {scanStep === 1 && (
+              ) : (
                 <div className="space-y-4">
                   <div className="relative overflow-hidden rounded-lg border bg-black">
                     {/* biome-ignore lint/a11y/useMediaCaption: <explanation> */}
@@ -507,141 +601,82 @@ export default function ReceiptScanner() {
                   <canvas ref={canvasRef} className="hidden" />
 
                   <div className="flex justify-between gap-4">
-                    <Button variant="outline" onClick={() => setScanStep(0)}>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setBatchScanMode(false)
+                        setScannedBatch([])
+                        stopCamera()
+                      }}
+                    >
                       キャンセル
                     </Button>
                     <Button
                       onClick={captureImage}
+                      disabled={isCapturing}
                       className="bg-orange-500 text-white hover:bg-orange-600"
                     >
                       <ScanIcon className="mr-2 h-4 w-4" />
-                      撮影する
+                      {isCapturing ? 'スキャン中...' : 'スキャンする'}
                     </Button>
                   </div>
+
+                  {/* スキャン済み領収書の表示 */}
+                  {scannedBatch.length > 0 && (
+                    <div className="mt-6">
+                      <h3 className="mb-2 text-lg font-medium">
+                        スキャン済み ({scannedBatch.length}件)
+                      </h3>
+                      <ScrollArea className="h-64 rounded-md border p-2">
+                        <div className="space-y-2">
+                          {scannedBatch.map((item) => (
+                            <div
+                              key={item.id}
+                              className="flex items-center justify-between rounded-md border p-2"
+                            >
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={item.image}
+                                  alt="領収書"
+                                  className="h-12 w-12 rounded-md object-cover"
+                                />
+                                <div>
+                                  <div className="font-medium">
+                                    {item.store || '名称なし'}
+                                  </div>
+                                  <div className="text-sm text-gray-500">
+                                    {Number.parseInt(
+                                      item.amount,
+                                    ).toLocaleString()}
+                                    円
+                                  </div>
+                                </div>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => removeFromBatch(item.id)}
+                              >
+                                <XIcon className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+
+                      <div className="mt-4 flex justify-end">
+                        <Button
+                          onClick={saveBatchReceipts}
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting
+                            ? '保存中...'
+                            : `${scannedBatch.length}件の領収書を保存`}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
-
-              {scanStep === 2 && (
-                <Form onSubmit={saveReceiptData} className="space-y-6">
-                  <div className="overflow-hidden rounded-lg border">
-                    {previewImage && (
-                      <img
-                        src={previewImage}
-                        alt="領収書プレビュー"
-                        className="max-h-64 w-full object-contain"
-                      />
-                    )}
-                  </div>
-
-                  <div className="grid gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="date">日付</Label>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="w-full justify-start text-left font-normal"
-                          >
-                            <CalendarIcon className="mr-2 h-4 w-4" />
-                            {recognizedData.date
-                              ? format(recognizedData.date, 'yyyy年MM月dd日')
-                              : '日付を選択'}
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0">
-                          <Calendar
-                            mode="single"
-                            selected={recognizedData.date}
-                            onSelect={(date) =>
-                              setRecognizedData({
-                                ...recognizedData,
-                                date: date || new Date(),
-                              })
-                            }
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                    </div>
-
-                    <div className="grid gap-2">
-                      <Label htmlFor="amount">金額 (円)</Label>
-                      <Input
-                        id="amount"
-                        name="amount"
-                        type="number"
-                        value={recognizedData.amount}
-                        onChange={(e) =>
-                          setRecognizedData({
-                            ...recognizedData,
-                            amount: e.target.value,
-                          })
-                        }
-                        required
-                      />
-                    </div>
-
-                    <div className="grid gap-2">
-                      <Label htmlFor="store">店舗名</Label>
-                      <Input
-                        id="store"
-                        name="store"
-                        type="text"
-                        value={recognizedData.store}
-                        onChange={(e) =>
-                          setRecognizedData({
-                            ...recognizedData,
-                            store: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-
-                    <div className="grid gap-2">
-                      <Label htmlFor="category">カテゴリ</Label>
-                      <Select
-                        value={recognizedData.category}
-                        onValueChange={(value) =>
-                          setRecognizedData({
-                            ...recognizedData,
-                            category: value,
-                          })
-                        }
-                      >
-                        <SelectTrigger id="category">
-                          <SelectValue placeholder="カテゴリを選択" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="未分類">未分類</SelectItem>
-                          <SelectItem value="食費">食費</SelectItem>
-                          <SelectItem value="交通費">交通費</SelectItem>
-                          <SelectItem value="医療費">医療費</SelectItem>
-                          <SelectItem value="通信費">通信費</SelectItem>
-                          <SelectItem value="娯楽費">娯楽費</SelectItem>
-                          <SelectItem value="その他">その他</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <input
-                        type="hidden"
-                        name="category"
-                        value={recognizedData.category}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex justify-between">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => setScanStep(0)}
-                    >
-                      キャンセル
-                    </Button>
-                    <Button type="submit" disabled={isSubmitting}>
-                      {isSubmitting ? '保存中...' : '保存する'}
-                    </Button>
-                  </div>
-                </Form>
               )}
             </CardContent>
           </Card>
@@ -728,64 +763,13 @@ export default function ReceiptScanner() {
                             {receipt.category}
                           </Badge>
 
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <EditIcon className="h-4 w-4" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>領収書詳細</DialogTitle>
-                                <DialogDescription>
-                                  領収書の詳細情報を確認できます（編集機能は実装予定）
-                                </DialogDescription>
-                              </DialogHeader>
-                              <div className="grid gap-4 py-4">
-                                <div className="flex justify-center">
-                                  <img
-                                    src={receipt.image}
-                                    alt={`領収書 ${receipt.store}`}
-                                    className="max-h-64 rounded-lg border object-contain"
-                                  />
-                                </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                  <div className="space-y-1">
-                                    <Label>日付</Label>
-                                    <div className="bg-muted rounded-md p-2">
-                                      {new Date(
-                                        receipt.date,
-                                      ).toLocaleDateString('ja-JP')}
-                                    </div>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <Label>金額</Label>
-                                    <div className="bg-muted rounded-md p-2">
-                                      {Number.parseInt(
-                                        receipt.amount,
-                                      ).toLocaleString()}
-                                      円
-                                    </div>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <Label>店舗名</Label>
-                                    <div className="bg-muted rounded-md p-2">
-                                      {receipt.store || '名称なし'}
-                                    </div>
-                                  </div>
-                                  <div className="space-y-1">
-                                    <Label>カテゴリ</Label>
-                                    <div className="bg-muted rounded-md p-2">
-                                      {receipt.category}
-                                    </div>
-                                  </div>
-                                </div>
-                              </div>
-                              <DialogFooter>
-                                <Button variant="outline">閉じる</Button>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => startEdit(receipt)}
+                          >
+                            <EditIcon className="h-4 w-4" />
+                          </Button>
                         </div>
                       ))}
                   </div>
@@ -795,6 +779,140 @@ export default function ReceiptScanner() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* 編集ダイアログ */}
+      {editReceipt && (
+        <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle>領収書を編集</DialogTitle>
+              <DialogDescription>
+                データを修正して保存してください
+              </DialogDescription>
+            </DialogHeader>
+
+            <Form onSubmit={saveEditedReceipt}>
+              <div className="grid gap-4 py-4">
+                <div className="flex justify-center">
+                  <img
+                    src={editReceipt.image}
+                    alt={`領収書 ${editReceipt.store}`}
+                    className="max-h-48 rounded-lg border object-contain"
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-date">日付</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal"
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {format(new Date(editReceipt.date), 'yyyy年MM月dd日')}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0">
+                      <Calendar
+                        mode="single"
+                        selected={new Date(editReceipt.date)}
+                        onSelect={(date) => {
+                          if (date) {
+                            setEditReceipt({
+                              ...editReceipt,
+                              date: format(date, 'yyyy-MM-dd'),
+                            })
+                          }
+                        }}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <input type="hidden" name="date" value={editReceipt.date} />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-amount">金額 (円)</Label>
+                  <Input
+                    id="edit-amount"
+                    name="amount"
+                    type="number"
+                    defaultValue={editReceipt.amount}
+                    onChange={(e) => {
+                      setEditReceipt({
+                        ...editReceipt,
+                        amount: e.target.value,
+                      })
+                    }}
+                    required
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-store">店舗名</Label>
+                  <Input
+                    id="edit-store"
+                    name="store"
+                    type="text"
+                    defaultValue={editReceipt.store}
+                    onChange={(e) => {
+                      setEditReceipt({
+                        ...editReceipt,
+                        store: e.target.value,
+                      })
+                    }}
+                  />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="edit-category">カテゴリ</Label>
+                  <Select
+                    defaultValue={editReceipt.category}
+                    onValueChange={(value) => {
+                      setEditReceipt({
+                        ...editReceipt,
+                        category: value,
+                      })
+                    }}
+                  >
+                    <SelectTrigger id="edit-category">
+                      <SelectValue placeholder="カテゴリを選択" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="未分類">未分類</SelectItem>
+                      <SelectItem value="食費">食費</SelectItem>
+                      <SelectItem value="交通費">交通費</SelectItem>
+                      <SelectItem value="医療費">医療費</SelectItem>
+                      <SelectItem value="通信費">通信費</SelectItem>
+                      <SelectItem value="娯楽費">娯楽費</SelectItem>
+                      <SelectItem value="その他">その他</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <input
+                    type="hidden"
+                    name="category"
+                    value={editReceipt.category}
+                  />
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  type="button"
+                  onClick={() => setShowEditDialog(false)}
+                >
+                  キャンセル
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? '保存中...' : '保存する'}
+                </Button>
+              </DialogFooter>
+            </Form>
+          </DialogContent>
+        </Dialog>
+      )}
 
       <footer className="text-muted-foreground mt-12 text-center text-sm">
         <p className="mb-2">
