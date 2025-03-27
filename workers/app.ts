@@ -1,10 +1,10 @@
-import { createRequestHandler } from "react-router";
+import { createRequestHandler } from 'react-router';
 
 declare global {
   interface CloudflareEnvironment extends Env {}
 }
 
-declare module "react-router" {
+declare module 'react-router' {
   export interface AppLoadContext {
     cloudflare: {
       env: CloudflareEnvironment;
@@ -14,8 +14,7 @@ declare module "react-router" {
 }
 
 const requestHandler = createRequestHandler(
-  // @ts-expect-error - virtual module provided by React Router
-  () => import("virtual:react-router/server-build"),
+  () => import('virtual:react-router/server-build'),
   import.meta.env.MODE
 );
 
