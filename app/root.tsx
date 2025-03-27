@@ -35,7 +35,6 @@ export const loader = ({ request, context }: Route.LoaderArgs) => {
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const rootLoaderData = useRouteLoaderData('root')
-  console.log({ rootLoaderData })
   const { isProd, env } = rootLoaderData ?? { isProd: false, env: {} }
 
   return (
