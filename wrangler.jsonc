@@ -1,25 +1,14 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "rscan",
-  "compatibility_date": "2025-02-24",
+  "compatibility_date": "2025-03-27",
   "compatibility_flags": [
     "nodejs_compat",
     "nodejs_compat_populate_process_env"
   ],
   "main": "./workers/app.ts",
   "assets": {},
-  "env": {
-    "development": {
-      "vars": {
-        "GA_TRACKING_ID": "",
-        "ENV": "development"
-      }
-    },
-    "production": {
-      "vars": {
-        "GA_TRACKING_ID": "G-GPLQ9VF7P4",
-        "ENV": "production"
-      }
-    }
+  "vars": {
+    "GA_TRACKING_ID": "G-GPLQ9VF7P4"
   }
 }

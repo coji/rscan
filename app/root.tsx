@@ -25,15 +25,16 @@ export const links: Route.LinksFunction = () => [
 ]
 
 export const loader = ({ request, context }: Route.LoaderArgs) => {
+  const url = new URL(request.url)
+  const isProd = url.hostname === 'rscan.app'
   const env = {
     GA_TRACKING_ID: context.cloudflare.env.GA_TRACKING_ID,
-    ENV: context.cloudflare.env.ENV,
   }
-  return { env }
+  return { isProd, env }
 }
 
 export function Layout({ children }: { children: React.ReactNode }) {
-  const { env } = useLoaderData<typeof loader>()
+  const { isProd, env } = useLoaderData<typeof loader>()
   return (
     <html lang="en">
       <head>
@@ -43,7 +44,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {env.ENV === 'production' && (
+        {isProd && (
           <>
             <script
               async
