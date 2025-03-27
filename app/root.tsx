@@ -5,6 +5,7 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useLoaderData,
 } from 'react-router'
 
 import type { Route } from './+types/root'
@@ -23,7 +24,16 @@ export const links: Route.LinksFunction = () => [
   },
 ]
 
+export const loader = ({ request, context }: Route.LoaderArgs) => {
+  const env = {
+    GA_TRACKING_ID: context.cloudflare.env.GA_TRACKING_ID,
+    ENV: context.cloudflare.env.ENV,
+  }
+  return { env }
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { env } = useLoaderData<typeof loader>()
   return (
     <html lang="en">
       <head>
@@ -33,6 +43,29 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+        {env.ENV === 'production' && (
+          <>
+            <script
+              async
+              src={`https://www.googletagmanager.com/gtag/js?id=${env.GA_TRACKING_ID}`}
+            />
+            <script
+              async
+              id="gtag-init"
+              // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
+              dangerouslySetInnerHTML={{
+                __html: `
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+
+                gtag('config', '${env.GA_TRACKING_ID}');
+                `,
+              }}
+            />
+          </>
+        )}
+
         {children}
         <ScrollRestoration />
         <Scripts />

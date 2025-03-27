@@ -18,7 +18,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '~/components/ui/dialog'
-import type { Route } from './+types/home'
 
 export function meta() {
   return [
@@ -29,10 +28,6 @@ export function meta() {
         'アカウント登録不要、完全無料で使える領収書スキャナー。スマホカメラでサクッとスキャン、データ化。確定申告や経費精算に最適。個人情報不要でプライバシーを保護。',
     },
   ]
-}
-
-export function loader({ context }: Route.LoaderArgs) {
-  return { message: context.cloudflare.env.VALUE_FROM_CLOUDFLARE }
 }
 
 export default function Home() {

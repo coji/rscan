@@ -8,7 +8,18 @@
   ],
   "main": "./workers/app.ts",
   "assets": {},
-  "vars": {
-    "VALUE_FROM_CLOUDFLARE": "Hello from Cloudflare"
+  "env": {
+    "development": {
+      "vars": {
+        "GA_TRACKING_ID": "",
+        "ENV": "development"
+      }
+    },
+    "production": {
+      "vars": {
+        "GA_TRACKING_ID": "G-GPLQ9VF7P4",
+        "ENV": "production"
+      }
+    }
   }
 }
