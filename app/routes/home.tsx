@@ -1,5 +1,4 @@
 import { AvatarImage } from '@radix-ui/react-avatar'
-import { PopoverContent } from '@radix-ui/react-popover'
 import { Camera, CheckCircle, FileText, Shield, Smartphone } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
@@ -11,7 +10,6 @@ import {
 } from '~/components/ui/accordion'
 import { Avatar, AvatarFallback } from '~/components/ui/avatar'
 import { Button } from '~/components/ui/button'
-import { Popover } from '~/components/ui/popover'
 import type { Route } from './+types/home'
 
 export function meta() {
@@ -44,8 +42,12 @@ export default function Home() {
           <Camera className="h-6 w-6 text-blue-500" />
           <span className="text-xl font-bold">領収書スキャナー</span>
         </div>
-        <Button variant="default" className="bg-orange-500 hover:bg-orange-600">
-          スキャン開始
+        <Button
+          variant="default"
+          className="bg-orange-500 hover:bg-orange-600"
+          asChild
+        >
+          <Link to="/scan">スキャン開始</Link>
         </Button>
       </header>
 
@@ -443,10 +445,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-
-      <Popover open={open}>
-        <PopoverContent>やあ！</PopoverContent>
-      </Popover>
     </div>
   )
 }
