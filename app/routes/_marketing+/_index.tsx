@@ -1,6 +1,6 @@
 import { Camera, CheckCircle, FileText, Shield, Smartphone } from 'lucide-react'
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router'
+import { href, Link } from 'react-router'
 import {
   Accordion,
   AccordionContent,
@@ -18,17 +18,6 @@ import {
   DialogTitle,
 } from '~/components/ui'
 
-export function meta() {
-  return [
-    { title: '領収書スキャナー | 登録不要・無料の領収書スキャン・管理ツール' },
-    {
-      name: 'description',
-      content:
-        'アカウント登録不要、完全無料で使える領収書スキャナー。スマホカメラでサクッとスキャン、データ化。確定申告や経費精算に最適。個人情報不要でプライバシーを保護。',
-    },
-  ]
-}
-
 declare global {
   interface Window {
     // biome-ignore lint/suspicious/noExplicitAny: <explanation>
@@ -45,6 +34,7 @@ export default function Home() {
 
   useEffect(() => {
     if (open) {
+      // Conversion tracking for Google Analytics
       window.gtag?.('event', 'conversion', {
         event_category: 'engagement',
         event_label: 'scan_dialog_opened',
@@ -95,9 +85,9 @@ export default function Home() {
               >
                 今すぐスキャン開始
               </Button>
-              {/* <Button variant="outline" size="lg" className="text-lg">
-                デモを見る
-              </Button> */}
+              <Button variant="outline" size="lg" className="text-lg">
+                <Link to={href('/scan')}>デモを見る</Link>
+              </Button>
             </div>
             <div className="inline-block rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
               すでに10,000人以上が利用中！

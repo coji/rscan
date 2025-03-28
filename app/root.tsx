@@ -9,9 +9,21 @@ import {
 } from 'react-router'
 
 import type { Route } from './+types/root'
-import './app.css'
+import styles from './app.css?url'
+
+export function meta() {
+  return [
+    { title: '領収書スキャナー | 登録不要・無料の領収書スキャン・管理ツール' },
+    {
+      name: 'description',
+      content:
+        'アカウント登録不要、完全無料で使える領収書スキャナー。スマホカメラでサクッとスキャン、データ化。確定申告や経費精算に最適。個人情報不要でプライバシーを保護。',
+    },
+  ]
+}
 
 export const links: Route.LinksFunction = () => [
+  { rel: 'stylesheet', href: styles },
   { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
   {
     rel: 'preconnect',
