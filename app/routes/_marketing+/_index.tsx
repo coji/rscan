@@ -85,7 +85,7 @@ export default function Home() {
               >
                 今すぐスキャン開始
               </Button>
-              <Button variant="outline" size="lg" className="text-lg">
+              <Button variant="outline" size="lg" className="text-lg" asChild>
                 <Link to={href('/scan')}>デモを見る</Link>
               </Button>
             </div>
