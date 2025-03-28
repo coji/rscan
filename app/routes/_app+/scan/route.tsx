@@ -1,17 +1,10 @@
 // app/routes/scanner.tsx
 import { format } from 'date-fns'
-import {
-  CameraIcon,
-  CheckCircleIcon,
-  ScanIcon,
-  UploadIcon,
-  XIcon,
-} from 'lucide-react'
+import { CameraIcon, CheckCircleIcon, ScanIcon, XIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigation, useSubmit } from 'react-router'
 import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
 import { Button } from '~/components/ui/button'
-import { Input } from '~/components/ui/input'
 import { ScrollArea } from '~/components/ui/scroll-area'
 import { Separator } from '~/components/ui/separator'
 import { openDatabase, saveReceipt, type Receipt } from '~/utils/receipt-db'
@@ -84,12 +77,11 @@ export default function ScannerPage({ actionData }: Route.ComponentProps) {
   // バッチスキャン用のステート
   const [batchScanMode, setBatchScanMode] = useState(false)
   const [scannedBatch, setScannedBatch] = useState<Receipt[]>([])
-  const [previewImage, setPreviewImage] = useState<string | null>(null)
+  const [, setPreviewImage] = useState<string | null>(null)
   const [isCapturing, setIsCapturing] = useState(false)
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
 
   // アクションデータの更新を検知してアラートを表示
   useEffect(() => {
@@ -125,21 +117,12 @@ export default function ScannerPage({ actionData }: Route.ComponentProps) {
 
         try {
           await videoRef.current.play()
-          console.log(
-            'カメラストリーム開始成功: ',
-            videoRef.current.videoWidth,
-            'x',
-            videoRef.current.videoHeight,
-          )
         } catch (playError) {
           console.error('ビデオ再生エラー:', playError)
           setBatchScanMode(false) // エラー時はモードを元に戻す
           alert('カメラの起動に失敗しました。')
         }
       } else {
-        console.error(
-          'videoRef.current が null です - カメラを初期化できません',
-        )
         setBatchScanMode(false) // エラー時はモードを元に戻す
       }
     } catch (error) {
@@ -226,35 +209,6 @@ export default function ScannerPage({ actionData }: Route.ComponentProps) {
     setIsCapturing(false)
   }
 
-  // ファイルから画像を選択（バッチ用）
-  const handleFileSelect = async (
-    event: React.ChangeEvent<HTMLInputElement>,
-  ) => {
-    const files = event.target.files
-    if (!files || files.length === 0) return
-
-    setBatchScanMode(true)
-
-    // 複数ファイルを順番に処理
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
-      const reader = new FileReader()
-
-      // Promise化して順番に処理
-      await new Promise<void>((resolve) => {
-        reader.onload = async (e: ProgressEvent<FileReader>) => {
-          const result = e.target?.result
-          if (typeof result === 'string') {
-            setPreviewImage(result)
-            await simulateOCR(result)
-            resolve()
-          }
-        }
-        reader.readAsDataURL(file)
-      })
-    }
-  }
-
   // OCRのシミュレーション
   const simulateOCR = async (imageData: string): Promise<void> => {
     return new Promise((resolve) => {
@@ -300,38 +254,6 @@ export default function ScannerPage({ actionData }: Route.ComponentProps) {
     setScannedBatch((prev) => prev.filter((receipt) => receipt.id !== id))
   }
 
-  useEffect(() => {
-    console.log(
-      'コンポーネントがマウントされました。videoRef の状態:',
-      videoRef.current ? 'OK' : 'NULL',
-    )
-
-    // このeffectは初回レンダリング時のみ実行
-  }, [])
-
-  // バッチスキャンモードに入る時にビデオ要素が確実に存在することを確認
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
-    if (batchScanMode) {
-      console.log('バッチスキャンモードが有効になりました')
-
-      // videoRefが設定されているか確認するための少し遅延させたチェック
-      const timeoutId = setTimeout(() => {
-        console.log(
-          'videoRef の状態:',
-          videoRef.current
-            ? 'ビデオ要素が存在します'
-            : 'ビデオ要素がありません',
-        )
-      }, 100)
-
-      return () => clearTimeout(timeoutId)
-    }
-    console.log('バッチスキャンモードが無効になりました')
-    // カメラのクリーンアップが必要な場合はここで行う
-    stopCamera()
-  }, [batchScanMode])
-
   const isSubmitting = navigation.state === 'submitting'
 
   return (
@@ -355,32 +277,11 @@ export default function ScannerPage({ actionData }: Route.ComponentProps) {
         <div>
           {!batchScanMode ? (
             <div className="space-y-6">
-              <div className="flex flex-col justify-center gap-4 sm:flex-row">
-                <Button
-                  onClick={startCamera}
-                  className="flex items-center gap-2"
-                >
-                  <CameraIcon className="h-4 w-4" />
+              <div className="flex flex-col justify-center sm:flex-row">
+                <Button size="lg" onClick={startCamera}>
+                  <CameraIcon />
                   カメラでスキャン開始
                 </Button>
-                <div className="relative">
-                  <Input
-                    type="file"
-                    ref={fileInputRef}
-                    accept="image/*"
-                    multiple
-                    onChange={handleFileSelect}
-                    className="hidden"
-                  />
-                  <Button
-                    variant="outline"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex w-full items-center gap-2"
-                  >
-                    <UploadIcon className="h-4 w-4" />
-                    画像をアップロード
-                  </Button>
-                </div>
               </div>
 
               <Separator />
@@ -392,13 +293,13 @@ export default function ScannerPage({ actionData }: Route.ComponentProps) {
                     <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full font-bold">
                       1
                     </div>
-                    <p>カメラを起動して領収書を次々スキャン</p>
+                    <p>カメラで領収書をまとめてスキャン</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full font-bold">
                       2
                     </div>
-                    <p>スキャン完了後、まとめて自動保存</p>
+                    <p>スキャン完了後、まとめて保存・自動識別</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full font-bold">
