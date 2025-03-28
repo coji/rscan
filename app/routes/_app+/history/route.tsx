@@ -2,16 +2,13 @@ import { format } from 'date-fns'
 import {
   AlertTriangleIcon,
   CalendarIcon,
-  CheckCircleIcon,
   DownloadIcon,
   EditIcon,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Form, useNavigation, useSubmit } from 'react-router'
+import { toast } from 'sonner'
 import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
   Badge,
   Button,
   Calendar,
@@ -48,7 +45,6 @@ import type { Route } from './+types/route'
 
 // クライアント側のローダー
 export const clientLoader = async () => {
-  // IndexedDBからスキャン履歴を取得
   try {
     const db = await openDatabase()
     const receipts = await getAllReceipts(db)
@@ -108,10 +104,12 @@ export const clientAction = async ({ request }: Route.ClientActionArgs) => {
       }
 
       await saveReceipt(db, updatedReceipt)
+
+      toast.success('領収書を更新しました')
+
       return {
         success: true,
         receipt: updatedReceipt,
-        message: '領収書を更新しました',
       }
     } catch (error) {
       return { success: false, error: String(error) }
@@ -145,8 +143,6 @@ export default function HistoryPage({
   const navigation = useNavigation()
   const submit = useSubmit()
   const [receipts, setReceipts] = useState<Receipt[]>([])
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false)
-  const [alertMessage, setAlertMessage] = useState('')
 
   // 編集用のステート
   const [editReceipt, setEditReceipt] = useState<Receipt | null>(null)
@@ -158,15 +154,6 @@ export default function HistoryPage({
       setReceipts(loaderData.receipts)
     }
   }, [loaderData])
-
-  // アクションデータの更新を検知してアラートを表示
-  useEffect(() => {
-    if (actionData?.success) {
-      setShowSuccessAlert(true)
-      setAlertMessage(actionData.message || '処理が完了しました')
-      setTimeout(() => setShowSuccessAlert(false), 3000)
-    }
-  }, [actionData])
 
   // 編集モードを開始
   const startEdit = (receipt: Receipt) => {
@@ -197,14 +184,6 @@ export default function HistoryPage({
 
   return (
     <>
-      {showSuccessAlert && (
-        <Alert className="mb-4 border-green-200 bg-green-50">
-          <CheckCircleIcon className="h-4 w-4 text-green-600" />
-          <AlertTitle>処理完了</AlertTitle>
-          <AlertDescription>{alertMessage}</AlertDescription>
-        </Alert>
-      )}
-
       <div className="grid gap-4">
         <div className="flex flex-row items-center justify-between">
           <div>

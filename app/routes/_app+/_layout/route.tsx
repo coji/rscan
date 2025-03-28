@@ -3,7 +3,7 @@ import { match } from 'ts-pattern'
 import { Tabs, TabsList, TabsTrigger } from '~/components/ui'
 import type { Route } from './+types/route'
 
-export const loader = ({ request }: Route.LoaderArgs) => {
+export const clientLoader = ({ request }: Route.LoaderArgs) => {
   const url = new URL(request.url)
   const tab = match(url.pathname)
     .with('/scan', () => 'scan')
@@ -26,7 +26,7 @@ export default function ReceiptScannerLayout({
         </p>
       </header>
 
-      <Tabs defaultValue={tab} className="mb-8">
+      <Tabs value={tab} className="mb-8">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="scan" asChild>
             <Link to={href('/scan')}>スキャン</Link>

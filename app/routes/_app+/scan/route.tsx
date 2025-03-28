@@ -1,15 +1,9 @@
 import { format } from 'date-fns'
-import { CameraIcon, CheckCircleIcon, ScanIcon, XIcon } from 'lucide-react'
+import { CameraIcon, ScanIcon, XIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { useNavigation, useSubmit } from 'react-router'
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-  Button,
-  ScrollArea,
-  Separator,
-} from '~/components/ui'
+import { href, redirect, useNavigation, useSubmit } from 'react-router'
+import { toast } from 'sonner'
+import { Button, ScrollArea, Separator } from '~/components/ui'
 import { openDatabase, saveReceipt, type Receipt } from '~/utils/receipt-db'
 import type { Route } from './+types/route'
 
@@ -29,20 +23,18 @@ export const clientAction = async ({ request }: Route.ClientActionArgs) => {
         await saveReceipt(db, receipt)
       }
 
-      return {
-        success: true,
-        message: `${receiptsData.length}件の領収書を保存しました`,
-      }
+      toast.success(`${receiptsData.length}件の領収書を保存しました`)
+      return redirect(href('/history'))
     } catch (error) {
       console.error('保存に失敗しました:', error)
-      return { success: false, error: String(error) }
+      return { action, success: false, error: String(error) }
     }
   }
 
   if (action === 'scan') {
     const imageData = formData.get('imageData')
     if (!imageData || typeof imageData !== 'string') {
-      return { success: false, error: 'Invalid image data' }
+      return { action, success: false, error: 'Invalid image data' }
     }
 
     const receiptData: Receipt = {
@@ -60,22 +52,20 @@ export const clientAction = async ({ request }: Route.ClientActionArgs) => {
     try {
       const db = await openDatabase()
       await saveReceipt(db, receiptData)
-      return { success: true, receipt: receiptData }
+      return { action, success: true, receipt: receiptData }
     } catch (error) {
       console.error('保存に失敗しました:', error)
-      return { success: false, error: String(error) }
+      return { action, success: false, error: String(error) }
     }
   }
 
-  return { success: false, error: '不明なアクション' }
+  return { action: null, success: false, error: '不明なアクション' }
 }
 
 // スキャナーコンポーネント
 export default function ScannerPage({ actionData }: Route.ComponentProps) {
   const navigation = useNavigation()
   const submit = useSubmit()
-  const [showSuccessAlert, setShowSuccessAlert] = useState(false)
-  const [alertMessage, setAlertMessage] = useState('')
 
   // バッチスキャン用のステート
   const [batchScanMode, setBatchScanMode] = useState(false)
@@ -88,17 +78,10 @@ export default function ScannerPage({ actionData }: Route.ComponentProps) {
 
   // アクションデータの更新を検知してアラートを表示
   useEffect(() => {
-    if (actionData?.success) {
-      setShowSuccessAlert(true)
-      setAlertMessage(actionData.message || '処理が完了しました')
-      setTimeout(() => setShowSuccessAlert(false), 3000)
-
-      // バッチスキャンモードを終了
-      if (actionData.message?.includes('件の領収書')) {
-        setBatchScanMode(false)
-        setScannedBatch([])
-        stopCamera()
-      }
+    if (actionData?.success && actionData?.action === 'scan_batch') {
+      setBatchScanMode(false)
+      setScannedBatch([])
+      stopCamera()
     }
   }, [actionData])
 
@@ -261,14 +244,6 @@ export default function ScannerPage({ actionData }: Route.ComponentProps) {
 
   return (
     <>
-      {showSuccessAlert && (
-        <Alert className="mb-4 border-green-200 bg-green-50">
-          <CheckCircleIcon className="h-4 w-4 text-green-600" />
-          <AlertTitle>処理完了</AlertTitle>
-          <AlertDescription>{alertMessage}</AlertDescription>
-        </Alert>
-      )}
-
       <div className="grid gap-4">
         <div>
           <h2 className="text-2xl font-bold">領収書一括スキャン</h2>
