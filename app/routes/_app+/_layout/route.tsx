@@ -1,4 +1,4 @@
-import { Link, Outlet } from 'react-router'
+import { href, Link, Outlet } from 'react-router'
 import { match } from 'ts-pattern'
 import { Tabs, TabsList, TabsTrigger } from '~/components/ui'
 import type { Route } from './+types/route'
@@ -29,10 +29,10 @@ export default function ReceiptScannerLayout({
       <Tabs defaultValue={tab} className="mb-8">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="scan" asChild>
-            <Link to="/scan">スキャン</Link>
+            <Link to={href('/scan')}>スキャン</Link>
           </TabsTrigger>
           <TabsTrigger value="history" asChild>
-            <Link to="/history">履歴</Link>
+            <Link to={href('/history')}>履歴</Link>
           </TabsTrigger>
         </TabsList>
       </Tabs>

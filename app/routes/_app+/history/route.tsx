@@ -70,6 +70,16 @@ export const clientAction = async ({ request }: Route.ClientActionArgs) => {
       const db = await openDatabase()
       const receipts = await getAllReceipts(db)
       const csvContent = generateCSV(receipts)
+      const blob = new Blob([csvContent], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `領収書データ_${new Date().toISOString().split('T')[0]}.csv`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+
       return { success: true, csvContent }
     } catch (error) {
       return { success: false, error: String(error) }
@@ -183,21 +193,6 @@ export default function HistoryPage({
     submit({ _action: 'export' }, { method: 'post' })
   }
 
-  // CSVダウンロード
-  useEffect(() => {
-    if (actionData?.csvContent) {
-      const blob = new Blob([actionData.csvContent], { type: 'text/csv' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `領収書データ_${new Date().toISOString().split('T')[0]}.csv`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
-    }
-  }, [actionData])
-
   const isSubmitting = navigation.state === 'submitting'
 
   return (
@@ -226,7 +221,6 @@ export default function HistoryPage({
                   variant="outline"
                   onClick={exportCSV}
                   disabled={receipts.length === 0}
-                  className="flex items-center gap-2"
                 >
                   <DownloadIcon className="h-4 w-4" />
                   CSVエクスポート
