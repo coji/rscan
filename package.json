@@ -39,7 +39,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
-    "@cloudflare/vite-plugin": "0.1.17",
+    "@cloudflare/vite-plugin": "0.1.18",
     "@react-router/dev": "7.4.0",
     "@react-router/remix-routes-option-adapter": "7.4.0",
     "@tailwindcss/vite": "4.0.17",
@@ -54,7 +54,7 @@
     "typescript": "5.8.2",
     "vite": "6.2.3",
     "vite-tsconfig-paths": "5.1.4",
-    "wrangler": "4.5.0"
+    "wrangler": "4.5.1"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
