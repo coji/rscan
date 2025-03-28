@@ -1,4 +1,3 @@
-// app/routes/history.tsx
 import { format } from 'date-fns'
 import {
   AlertTriangleIcon,
@@ -9,39 +8,35 @@ import {
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Form, useNavigation, useSubmit } from 'react-router'
-import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
-import { Badge } from '~/components/ui/badge'
-import { Button } from '~/components/ui/button'
-import { Calendar } from '~/components/ui/calendar'
 import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Badge,
+  Button,
+  Calendar,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '~/components/ui/dialog'
-import { Input } from '~/components/ui/input'
-import { Label } from '~/components/ui/label'
-import {
+  Input,
+  Label,
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from '~/components/ui/popover'
-import { ScrollArea } from '~/components/ui/scroll-area'
-import {
+  ScrollArea,
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '~/components/ui/select'
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from '~/components/ui/tooltip'
+} from '~/components/ui'
 import {
   getAllReceipts,
   getReceiptById,

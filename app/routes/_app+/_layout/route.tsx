@@ -1,6 +1,6 @@
 import { Link, Outlet } from 'react-router'
 import { match } from 'ts-pattern'
-import { Tabs, TabsList, TabsTrigger } from '~/components/ui/tabs'
+import { Tabs, TabsList, TabsTrigger } from '~/components/ui'
 import type { Route } from './+types/route'
 
 export const loader = ({ request }: Route.LoaderArgs) => {

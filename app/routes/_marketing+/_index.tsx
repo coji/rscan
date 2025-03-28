@@ -6,17 +6,17 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '~/components/ui/accordion'
-import { Avatar, AvatarFallback, AvatarImage } from '~/components/ui/avatar'
-import { Button } from '~/components/ui/button'
-import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '~/components/ui/dialog'
+} from '~/components/ui'
 
 export function meta() {
   return [

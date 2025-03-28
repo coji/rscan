@@ -1,12 +1,15 @@
-// app/routes/scanner.tsx
 import { format } from 'date-fns'
 import { CameraIcon, CheckCircleIcon, ScanIcon, XIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useNavigation, useSubmit } from 'react-router'
-import { Alert, AlertDescription, AlertTitle } from '~/components/ui/alert'
-import { Button } from '~/components/ui/button'
-import { ScrollArea } from '~/components/ui/scroll-area'
-import { Separator } from '~/components/ui/separator'
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+  Button,
+  ScrollArea,
+  Separator,
+} from '~/components/ui'
 import { openDatabase, saveReceipt, type Receipt } from '~/utils/receipt-db'
 import type { Route } from './+types/route'
 
