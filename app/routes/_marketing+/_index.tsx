@@ -86,7 +86,9 @@ export default function Home() {
                 今すぐスキャン開始
               </Button>
               <Button variant="outline" size="lg" className="text-lg" asChild>
-                <Link to={href('/scan')}>デモを見る</Link>
+                <Link to={href('/scan')} prefetch="viewport">
+                  デモを見る
+                </Link>
               </Button>
             </div>
             <div className="inline-block rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
