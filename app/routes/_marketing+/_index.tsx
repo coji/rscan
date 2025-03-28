@@ -63,7 +63,7 @@ export default function Home() {
       {/* Hero Section */}
       <section className="bg-gradient-to-b from-blue-50 to-white px-4 py-16">
         <div className="container mx-auto flex max-w-6xl flex-col items-center gap-8 md:flex-row">
-          <div className="flex-1 space-y-6">
+          <div className="w-full flex-1 space-y-6">
             <h1 className="text-4xl font-bold text-gray-900 md:text-5xl">
               領収書スキャナー
               <br />
@@ -204,6 +204,7 @@ export default function Home() {
                 <img
                   src="/images/usecase-1.png"
                   alt="確定申告イメージ"
+                  loading="lazy"
                   width={500}
                   height={500}
                   className="rounded-lg"
@@ -220,6 +221,7 @@ export default function Home() {
                 <img
                   src="/images/usecase-2.png"
                   alt="経費精算イメージ"
+                  loading="lazy"
                   width={500}
                   height={500}
                   className="h-auto w-auto rounded-lg"
@@ -236,6 +238,7 @@ export default function Home() {
                 <img
                   src="/images/usecase-3.png"
                   alt="領収書作成イメージ"
+                  loading="lazy"
                   width={500}
                   height={500}
                   className="rounded-lg"
@@ -352,6 +355,7 @@ export default function Home() {
                     </AvatarFallback>
                     <AvatarImage
                       src={`images/user-${i + 1}.png`}
+                      loading="lazy"
                       alt={testimonial.name}
                     />
                   </Avatar>
