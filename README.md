@@ -1,79 +1,59 @@
-# Welcome to React Router
+# 「ReciScan」- サクッと領収書スキャン＆発行
 
-A modern, production-ready template for building full-stack React applications using React Router.
+## 概要
 
-## Features
+**登録不要・完全無料**の領収書管理ウェブサービス「ReciScan」。スマホカメラで**サクッとスキャン**して、ブラウザに**安全保存**。個人情報なし、手間なし、費用なし。
 
-- 🚀 Server-side rendering
-- ⚡️ Hot Module Replacement (HMR)
-- 📦 Asset bundling and optimization
-- 🔄 Data loading and mutations
-- 🔒 TypeScript by default
-- 🎉 TailwindCSS for styling
-- 📖 [React Router docs](https://reactrouter.com/)
+## 特長
 
-## Getting Started
+### 💯 完全無料・登録なし
 
-### Installation
+- アカウント登録・ログイン不要
+- メールアドレスも電話番号も不要
+- すぐに使えて、いつでも使える
 
-Install the dependencies:
+### 📱 スマホカメラでサクサク処理
 
-```bash
-npm install
-```
+- 領収書を自動検出して切り取り
+- 連続スキャンでまとめて処理
+- 傾いた領収書も自動補正
 
-### Development
+### 🔒 プライバシー最優先
 
-Start the development server with HMR:
+- データはあなたのブラウザ内だけに保存
+- クラウドへのアップロードなし
+- サーバーに個人情報が残らない安心設計
 
-```bash
-npm run dev
-```
+### 📄 かんたん領収書発行
 
-Your application will be available at `http://localhost:5173`.
+- テンプレートから数タップで作成
+- PDF形式でダウンロード・共有
+- 専用ソフト不要
 
-## Previewing the Production Build
+### 📊 確定申告もラクラク
 
-Preview the production build locally:
+- 医療費、交通費など自動分類
+- 年度別に整理
+- まとめてCSV出力で確定申告に直接利用
 
-```bash
-npm run preview
-```
+## 使い方
 
-## Building for Production
+**Step 1:** サイトにアクセス（アプリインストール不要）
 
-Create a production build:
+**Step 2:** 「スキャン開始」をタップ
 
-```bash
-npm run build
-```
+**Step 3:** カメラを領収書に向けるだけ（自動検出）
 
-## Deployment
+**Step 4:** サクサク連続スキャン
 
-Deployment is done using the Wrangler CLI.
+**Step 5:** まとめてデータ化・分類
 
-To build and deploy directly to production:
+**Step 6:** 必要な時に必要な形式で出力
 
-```sh
-npm run deploy
-```
+## このサービスが選ばれる理由
 
-To deploy a preview URL:
-
-```sh
-npx wrangler versions upload
-```
-
-You can then promote a version to production after verification or roll it out progressively.
-
-```sh
-npx wrangler versions deploy
-```
-
-## Styling
-
-This template comes with [Tailwind CSS](https://tailwindcss.com/) already configured for a simple default starting experience. You can use whatever CSS framework you prefer.
-
----
-
-Built with ❤️ using React Router.
+- **手間ゼロ**: 登録作業なし、複雑な設定なし
+- **速さ重視**: スイスイ撮って即処理
+- **安心設計**: 個人情報不要＆ブラウザ内保存
+- **どこでも使える**: スマホからもPCからも同じURLでアクセス
+- **コストゼロ**: 広告だけで運営、ずっと無料
